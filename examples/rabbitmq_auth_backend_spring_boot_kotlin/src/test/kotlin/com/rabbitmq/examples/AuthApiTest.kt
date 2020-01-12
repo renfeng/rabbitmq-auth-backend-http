@@ -16,6 +16,7 @@
  */
 package com.rabbitmq.examples
 
+import org.apache.commons.lang3.RandomStringUtils
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -32,12 +33,17 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 @WebMvcTest
 class AuthApiTest(@Autowired val mockMvc: MockMvc) {
 
+    // https://lists.rabbitmq.com/pipermail/rabbitmq-discuss/2010-April/006844.html
+    private var length = kotlin.random.Random.nextInt(1, 3800 - 23) / 2
+    private var username = RandomStringUtils.randomAlphanumeric(length)
+    private var password = username
+
     // user
     @Test
     fun `Check authentication for external users with GET`() {
         mockMvc.perform(get("/auth/user")
-                .param("username", "guest")
-                .param("password", "guest"))
+                .param("username", username)
+                .param("password", password))
                 .andExpect(status().isOk)
                 .andExpect(MockMvcResultMatchers.content().string("allow administrator management"))
 
@@ -47,7 +53,7 @@ class AuthApiTest(@Autowired val mockMvc: MockMvc) {
     fun `Check deny for external users with GET`() {
         mockMvc.perform(get("/auth/user")
                 .param("username", "guest")
-                .param("password", "wrong"))
+                .param("password", "guest"))
                 .andExpect(status().isOk)
                 .andExpect(MockMvcResultMatchers.content().string("deny"))
     }
@@ -55,7 +61,7 @@ class AuthApiTest(@Autowired val mockMvc: MockMvc) {
     @Test
     fun `Check authentication for external users with POST`() {
         mockMvc.perform(post("/auth/user").contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .content("username=guest&password=guest"))
+                .content("username=$username&password=$password"))
                 .andExpect(status().isOk)
                 .andExpect(MockMvcResultMatchers.content().string("allow administrator management"))
     }
@@ -64,7 +70,7 @@ class AuthApiTest(@Autowired val mockMvc: MockMvc) {
     @Test
     fun `Check vhost for external users with GET`() {
         mockMvc.perform(get("/auth/vhost")
-                .param("username", "guest")
+                .param("username", username)
                 .param("vhost", "guest"))
                 .andExpect(status().isOk)
                 .andExpect(MockMvcResultMatchers.content().string("allow"))
@@ -73,7 +79,7 @@ class AuthApiTest(@Autowired val mockMvc: MockMvc) {
     @Test
     fun `Check vhost for external users with POST`() {
         mockMvc.perform(post("/auth/vhost").contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .content("username=guest&vhost=guest"))
+                .content("username=$username&vhost=guest"))
                 .andExpect(status().isOk)
                 .andExpect(MockMvcResultMatchers.content().string("allow"))
     }
@@ -82,7 +88,7 @@ class AuthApiTest(@Autowired val mockMvc: MockMvc) {
     @Test
     fun `Check resource_path for external users with GET`() {
         mockMvc.perform(get("/auth/resource")
-                .param("username", "guest")
+                .param("username", username)
                 .param("vhost", "guest")
                 .param("resource", "exchange")
                 .param("name", "amq.topic")
@@ -94,7 +100,7 @@ class AuthApiTest(@Autowired val mockMvc: MockMvc) {
     @Test
     fun `Check resource_path for external users with POST`() {
         mockMvc.perform(post("/auth/resource").contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .content("username=guest&vhost=guest&resource=exchange&name=amq.topic&permission=write"))
+                .content("username=$username&vhost=guest&resource=exchange&name=amq.topic&permission=write"))
                 .andExpect(status().isOk)
                 .andExpect(MockMvcResultMatchers.content().string("allow"))
     }
@@ -103,7 +109,7 @@ class AuthApiTest(@Autowired val mockMvc: MockMvc) {
     @Test
     fun `Check topic for external users with GET`() {
         mockMvc.perform(get("/auth/topic")
-                .param("username", "guest")
+                .param("username", username)
                 .param("vhost", "guest")
                 .param("resource", "exchange")
                 .param("name", "amq.topic")
@@ -116,7 +122,7 @@ class AuthApiTest(@Autowired val mockMvc: MockMvc) {
     @Test
     fun `Check topic for external users with POST`() {
         mockMvc.perform(post("/auth/topic").contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .content("username=guest&vhost=guest&resource=exchange&name=amq.topic&permission=write&routing_key=a.b"))
+                .content("username=$username&vhost=guest&resource=exchange&name=amq.topic&permission=write&routing_key=a.b"))
                 .andExpect(status().isOk)
                 .andExpect(MockMvcResultMatchers.content().string("allow"))
     }
@@ -124,7 +130,7 @@ class AuthApiTest(@Autowired val mockMvc: MockMvc) {
     @Test
     fun `Check deny topic for external users with GET`() {
         mockMvc.perform(get("/auth/topic")
-                .param("username", "guest")
+                .param("username", username)
                 .param("vhost", "guest")
                 .param("resource", "exchange")
                 .param("name", "amq.topic")

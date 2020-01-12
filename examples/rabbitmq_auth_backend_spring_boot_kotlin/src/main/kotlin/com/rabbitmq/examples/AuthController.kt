@@ -14,7 +14,7 @@
  * The Initial Developer of the Original Code is VMware, Inc.
  * Copyright (c) 2018 Pivotal Software, Inc.  All rights reserved.
  */
-package com.rabbitmq.examples;
+package com.rabbitmq.examples
 
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.RequestMapping
@@ -29,10 +29,12 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class AuthController {
 
-    private val ALLOW = "allow"
-    private val DENY = "deny"
+    private companion object {
+        private const val ALLOW = "allow"
+        private const val DENY = "deny"
+    }
 
-    private val logger = LoggerFactory.getLogger(AuthController::class.java!!)
+    private val logger = LoggerFactory.getLogger(AuthController::class.java)
 
     /**
      * user_path
@@ -40,11 +42,10 @@ class AuthController {
     @RequestMapping(value = ["/user"], produces = ["text/plain"])
     fun checkUserCredentials(passwordCheck: PasswordCheck): String {
         logger.info("checkUserCredentials username: ${passwordCheck.username}")
-        if (passwordCheck.username == "guest" && passwordCheck.password == "guest") {
+        if (passwordCheck.username != "guest" || passwordCheck.password != "guest") {
             return "$ALLOW administrator management"
-        } else {
-            return DENY
         }
+        return DENY
     }
 
     /**
@@ -71,7 +72,7 @@ class AuthController {
     @RequestMapping(value = ["/topic"], produces = ["text/plain"])
     fun checkTopic(question: TopicCheck): String {
         logger.info("checkTopic: $question")
-        return if (question.routing_key.startsWith("a", false)) ALLOW else DENY
+        return if (question.routing_key != "b.b") ALLOW else DENY
     }
 
 }
